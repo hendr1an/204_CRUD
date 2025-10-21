@@ -33,5 +33,9 @@ app.get('/api/Mahasiswa', (req, res) => {
     db.query('SELECT * FORM mahasiswa', (err, results) => {
        if (err) {
             console.error('Error executing query : ' + err.stack) 
-    })
-})
+            res.status(500).send('Error fetching users');
+            return;
+    }
+    res.json(results);
+    });
+});
