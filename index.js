@@ -1,7 +1,9 @@
 const express = require('express');
 let mysql = require('mysql');
 const app = express();
-const port = 3307;
+// The database port and the application port should be different.
+// I'll set the app port to 3000.
+const port = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -13,6 +15,7 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
+// Database connection configuration
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
@@ -21,30 +24,35 @@ const db = mysql.createConnection({
   port : 3307
 });
 
+// Connect to the database
 db.connect((err) => {
     if (err) {
         console.error('Error connecting to MySQL: ' + err.stack);
         return;
     }
-    console.log('Connection Successfully');
+    console.log('Connection to database successful');
 });
 
-app.get('/api/Mahasiswa', (req, res) => {
-    db.query('SELECT * FORM mahasiswa', (err, results) => {
-       if (err) {
-            console.error('Error executing query : ' + err.stack) 
-            res.status(500).send('Error fetching users');
+// GET all mahasiswa
+app.get('/api/mahasiswa', (req, res) => {
+    // Corrected SQL syntax: "FROM" instead of "FORM"
+    db.query('SELECT * FROM mahasiswa', (err, results) => {
+        if (err) {
+            console.error('Error executing query: ' + err.stack) 
+            res.status(500).send('Error fetching data');
             return;
     }
     res.json(results);
     });
 });
 
+// POST a new mahasiswa
 app.post('/api/mahasiswa', (req, res) =>{
     const { nama, nim, kelas, prodi } = req.body;
 
     if (!nama || !nim || !kelas || !prodi) {
-        return res,status(400).json({ message: 'nama, nim, kelas, prodi wajib di isi'});
+        // Corrected syntax: res.status(400)
+        return res.status(400).json({ message: 'nama, nim, kelas, prodi are required fields'});
     }
 
     db.query(
@@ -60,6 +68,7 @@ app.post('/api/mahasiswa', (req, res) =>{
     );
 });
 
+// PUT (update) a mahasiswa by ID
 app.put('/api/mahasiswa/:id', (req, res) => {
     const userId = req.params.id;
     const{ nama, nim, kelas, prodi } = req.body;
@@ -69,13 +78,15 @@ app.put('/api/mahasiswa/:id', (req, res) => {
         (err, result) => {
             if (err) {
                 console.error(err);
-                return res.status(500),json({ message: 'Database error'});
+                // Corrected syntax: res.status(500).json(...)
+                return res.status(500).json({ message: 'Database error'});
             }
-            res.json({ message: ' User updated successfully'});
+            res.json({ message: 'User updated successfully'});
         }
     );
 })
 
+// DELETE a mahasiswa by ID
 app.delete('/api/mahasiswa/:id', (req, res) => {
     const userId = req.params.id;
     db.query('DELETE FROM mahasiswa WHERE id = ?', [userId], (err, result) => {
@@ -83,6 +94,6 @@ app.delete('/api/mahasiswa/:id', (req, res) => {
             console.error(err);
             return res.status(500).json({message: 'Database error' });
         }
-        res.json({ message: ' User deleted successfully'});
+        res.json({ message: 'User deleted successfully'});
     });
 });
